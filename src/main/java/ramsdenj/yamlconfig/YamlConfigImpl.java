@@ -26,14 +26,14 @@ public class YamlConfigImpl implements YamlConfig {
     private String application;
     private String group;
     private String environment;
-    private String realm;
+    private String region;
     private ConfigurationInstanceProvider configurationInstanceProvider;
     
     private Map<String, Object> keys;
     private ReadWriteLock lock;
     
-    public YamlConfigImpl(String realm, String environment, String group, String application, ConfigurationInstanceProvider configurationInstanceProvider) {
-        this.realm = realm;
+    public YamlConfigImpl(String region, String environment, String group, String application, ConfigurationInstanceProvider configurationInstanceProvider) {
+        this.region = region;
         this.environment = environment;
         this.group = group;
         this.application = application;
@@ -107,8 +107,8 @@ public class YamlConfigImpl implements YamlConfig {
             } else if (!environment.equals(configurationSettings.getEnvironment())) {
                 LOG.info("Skipping configuration.  Incorrect environment:  ConfigurationSettings->environment={}", configurationSettings.getEnvironment());
                 continue;
-            } else if (!realm.equals(configurationSettings.getRealm())) {
-                LOG.info("Skipping configuration.  Incorrect realm: ConfigurationSettings->realm={}", configurationSettings.getRealm());
+            } else if (!region.equals(configurationSettings.getRegion())) {
+                LOG.info("Skipping configuration.  Incorrect region: ConfigurationSettings->region={}", configurationSettings.getRegion());
                 continue;
             } else if (configurationSettings.getScope() == ConfigurationScope.GROUP &&
                     !group.equals(configurationSettings.getNamespace())) {

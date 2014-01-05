@@ -5,15 +5,15 @@ public class ConfigurationSettings {
     private ConfigurationScope scope;
     private String namespace;
     private String environment;
-    private String realm;
+    private String region;
     
     public ConfigurationSettings() { }
     
-    public ConfigurationSettings(ConfigurationScope scope, String namespace, String environment, String realm) {
+    public ConfigurationSettings(ConfigurationScope scope, String namespace, String environment, String region) {
         this.scope = scope;
         this.namespace = namespace;
         this.environment = environment;
-        this.realm = realm;
+        this.region = region;
     }
 
     public ConfigurationScope getScope() {
@@ -40,18 +40,18 @@ public class ConfigurationSettings {
         this.environment = environment;
     }
     
-    public String getRealm() {
-        return realm;
+    public String getRegion() {
+        return region;
     }
     
-    public void setRealm(String realm) {
-        this.realm = realm;
+    public void setRegion(String region) {
+        this.region = region;
     }
     
     @Override
     public String toString() {
         return "ConfigSettings [scope=" + scope + ", namespace="
-                + namespace + ", environment=" + environment + ", realm="
-                + realm + "]";
+                + namespace + ", environment=" + environment + ", region="
+                + region + "]";
     }
 }

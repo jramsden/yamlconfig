@@ -35,7 +35,7 @@ public class YamlConfigImplTest extends EasyMockSupport {
         }
     }
     
-    private static final String realm = "us-east-1";
+    private static final String region = "us-east-1";
     private static final String environment = "test";
     private static final String group = "group";
     private static final String application = "application";
@@ -53,7 +53,7 @@ public class YamlConfigImplTest extends EasyMockSupport {
         expect(provider.loadConfigurations()).andReturn(Arrays.asList(globalConfig));
         expect(globalConfig.getConfigurationSettings()).andReturn(globalSettings);
         expect(globalSettings.getEnvironment()).andReturn(environment);
-        expect(globalSettings.getRealm()).andReturn(realm);
+        expect(globalSettings.getRegion()).andReturn(region);
         expect(globalSettings.getScope()).andReturn(ConfigurationScope.GLOBAL).times(2);
         expect(globalConfig.getConfigurationSettings()).andReturn(globalSettings);
         expect(globalSettings.getScope()).andReturn(ConfigurationScope.GLOBAL);
@@ -61,7 +61,7 @@ public class YamlConfigImplTest extends EasyMockSupport {
         expect(globalConfig.getKeys()).andReturn(keys);
         
         replayAll();
-        YamlConfig config = new YamlConfigImpl(realm, environment, group, application, provider);
+        YamlConfig config = new YamlConfigImpl(region, environment, group, application, provider);
         config.refresh();
         verifyAll();
         
@@ -70,7 +70,7 @@ public class YamlConfigImplTest extends EasyMockSupport {
     
     @Test
     public void shouldReadStringSetting() throws Exception {
-        ConfigurationSettings configurationSettings = new ConfigurationSettings(ConfigurationScope.GLOBAL, null, environment, realm);
+        ConfigurationSettings configurationSettings = new ConfigurationSettings(ConfigurationScope.GLOBAL, null, environment, region);
         Map<String, Object> keys = new HashMap<String, Object>();
         keys.put("k1", "v1");
         ConfigurationInstance instance = new ConfigurationInstance()
@@ -78,7 +78,7 @@ public class YamlConfigImplTest extends EasyMockSupport {
             .withKeys(keys);
         
         ConfigurationInstanceProvider provider = createLocalProvider(instance);
-        YamlConfig config = new YamlConfigImpl(realm, environment, group, application, provider);
+        YamlConfig config = new YamlConfigImpl(region, environment, group, application, provider);
         config.refresh();
         
         assertEquals("v1", config.getSetting("k1"));
@@ -87,7 +87,7 @@ public class YamlConfigImplTest extends EasyMockSupport {
     
     @Test
     public void shouldReadNonString() throws Exception {
-        ConfigurationSettings configurationSettings = new ConfigurationSettings(ConfigurationScope.GLOBAL, null, environment, realm);
+        ConfigurationSettings configurationSettings = new ConfigurationSettings(ConfigurationScope.GLOBAL, null, environment, region);
         Map<String, Object> keys = new HashMap<String, Object>();
         keys.put("k1", 1);
         ConfigurationInstance instance = new ConfigurationInstance()
@@ -95,7 +95,7 @@ public class YamlConfigImplTest extends EasyMockSupport {
             .withKeys(keys);
         
         ConfigurationInstanceProvider provider = createLocalProvider(instance);
-        YamlConfig config = new YamlConfigImpl(realm, environment, group, application, provider);
+        YamlConfig config = new YamlConfigImpl(region, environment, group, application, provider);
         config.refresh();
         
         assertEquals(1, (int)config.getSetting("k1", Integer.class));
@@ -104,7 +104,7 @@ public class YamlConfigImplTest extends EasyMockSupport {
     @Test
     public void shouldReadPojoSetting() throws Exception {
         int pojoPropertyValue = 2;
-        ConfigurationSettings configurationSettings = new ConfigurationSettings(ConfigurationScope.GLOBAL, null, environment, realm);
+        ConfigurationSettings configurationSettings = new ConfigurationSettings(ConfigurationScope.GLOBAL, null, environment, region);
         Map<String, Object> keys = new HashMap<String, Object>();
         Map<String, Object> keysl2 = new HashMap<String, Object>();
         keys.put("k1", keysl2);
@@ -112,7 +112,7 @@ public class YamlConfigImplTest extends EasyMockSupport {
         
         ConfigurationInstance instance = new ConfigurationInstance().withConfigurationSettings(configurationSettings).withKeys(keys);
         ConfigurationInstanceProvider provider = createLocalProvider(instance);
-        YamlConfig config = new YamlConfigImpl(realm, environment, group, application, provider);
+        YamlConfig config = new YamlConfigImpl(region, environment, group, application, provider);
         config.refresh();
         
         TestPojo pojo = config.getSetting("k1", TestPojo.class);
@@ -122,7 +122,7 @@ public class YamlConfigImplTest extends EasyMockSupport {
     
     @Test
     public void shouldReadNestedSetting() throws Exception {
-        ConfigurationSettings configurationSettings = new ConfigurationSettings(ConfigurationScope.GLOBAL, null, environment, realm);
+        ConfigurationSettings configurationSettings = new ConfigurationSettings(ConfigurationScope.GLOBAL, null, environment, region);
         Map<String, Object> keys = new HashMap<String, Object>();
         Map<String, Object> keysl2 = new HashMap<String, Object>();
         keysl2.put("kl2", "value");
@@ -130,7 +130,7 @@ public class YamlConfigImplTest extends EasyMockSupport {
         
         ConfigurationInstance instance = new ConfigurationInstance().withConfigurationSettings(configurationSettings).withKeys(keys);
         ConfigurationInstanceProvider provider = createLocalProvider(instance);
-        YamlConfig config = new YamlConfigImpl(realm, environment, group, application, provider);
+        YamlConfig config = new YamlConfigImpl(region, environment, group, application, provider);
         config.refresh();
         
         assertEquals("value", config.getSetting("kl1->kl2"));

@@ -11,7 +11,7 @@ import static org.junit.Assert.*;
 
 public class ConfigurationInstanceTest {
     
-    private static final String yamlConfig = "configurationSettings:\n  scope: APPLICATION\n  namespace: LocalTranscoderSample\n  environment: alpha\n  realm: us-east-1\nkeys:\n  key1: val1";
+    private static final String yamlConfig = "configurationSettings:\n  scope: APPLICATION\n  namespace: LocalTranscoderSample\n  environment: alpha\n  region: us-east-1\nkeys:\n  key1: val1";
     
     @Test
     public void shouldLoadConfigurationInstance() {
@@ -28,7 +28,7 @@ public class ConfigurationInstanceTest {
         assertEquals(ConfigurationScope.APPLICATION, settings.getScope());
         assertEquals("LocalTranscoderSample", settings.getNamespace());
         assertEquals("alpha", settings.getEnvironment());
-        assertEquals("us-east-1", settings.getRealm());
+        assertEquals("us-east-1", settings.getRegion());
         
         // Validate keys.
         assertEquals("val1", instance.getKeys().get("key1"));
