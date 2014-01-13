@@ -5,7 +5,7 @@ Java Application Configuration
 
 Retrieving settings from configuration:
 
-'''yaml
+```yaml
 configurations:
   -
     configuration:
@@ -25,22 +25,22 @@ configurations:
       namespace: ramsdenj.myappgroup.myapp.dev.us-east-1
       keys:
         sampleKeyTwo: sampleValueTwo
-'''
+```
 
-'''java
+```java
 YamlConfig yamlConfig = new YamlConfigImpl("ramsdenj", configurationInstanceProvider);
 yamlConfig.getSetting("sampleKey");                     // returns "sampleValue"
 yamlConfig.getSetting("sampleKeyMap->nestedKeyOne")     // returns "nestedValueOne"
-'''
+```
 
-'''java
+```java
 YamlConfig yamlConfig = new YamlConfigImpl("ramsdenj.myappgroup.myapp", configurationInstanceProvider);
 yamlConfig.getSetting("sampleKey");     // returns "sampleValueOverride"
 yamlConfig.getSetting("sampleKeyTwo");  // throws ConfigurationKeyNotFoundException
-'''
+```
 
 You can also retrieve POJOs:
-'''
+```
 configurations:
   -
   configuration:
@@ -49,12 +49,12 @@ configurations:
       point:
         x: 1.0
         y: 2.2
-'''
+```
 
-'''java
+```java
 YamlConfig yamlConfig = new YamlConfigImpl("ramsdenj.myapp.dev");
 yamlConfig.getSetting("point", Point.class);            // returns an instance of Point.
-'''
+```
 
 You should never define the same key in the same scope more than once.  If the
 same key is defined more than once in the same scope, the key will be overwritten
