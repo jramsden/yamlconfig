@@ -1,18 +1,14 @@
 package ramsdenj.yamlconfig;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import ramsdenj.yamlconfig.model.ConfigurationInstance;
+import ramsdenj.yamlconfig.model.ConfigurationCompactor;
 import ramsdenj.yamlconfig.model.ConfigurationKeyNotFoundException;
-import ramsdenj.yamlconfig.model.ConfigurationScope;
-import ramsdenj.yamlconfig.model.ConfigurationSettings;
 import ramsdenj.yamlconfig.model.ConfigurationValueConversionException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
@@ -23,21 +19,15 @@ public class YamlConfigImpl implements YamlConfig {
     private static final Logger LOG = LoggerFactory.getLogger(YamlConfigImpl.class);
     private static final String PATH_SEPARATOR = "->";
     
-    private String application;
-    private String group;
-    private String environment;
-    private String region;
     private ConfigurationInstanceProvider configurationInstanceProvider;
+    private ConfigurationCompactor configurationCompactor;
     
     private Map<String, Object> keys;
     private ReadWriteLock lock;
     
-    public YamlConfigImpl(String region, String environment, String group, String application, ConfigurationInstanceProvider configurationInstanceProvider) {
-        this.region = region;
-        this.environment = environment;
-        this.group = group;
-        this.application = application;
+    public YamlConfigImpl(String namespace, ConfigurationInstanceProvider configurationInstanceProvider) {
         this.configurationInstanceProvider = configurationInstanceProvider;
+        this.configurationCompactor = new ConfigurationCompactor(namespace);
         this.lock = new ReentrantReadWriteLock();
     }
 
@@ -48,17 +38,22 @@ public class YamlConfigImpl implements YamlConfig {
     @SuppressWarnings("unchecked")
     public <T> T getSetting(String path, Class<T> clazz) throws ConfigurationKeyNotFoundException, ConfigurationValueConversionException {
         
-        Object configValue = keys;
-        
-        String[] tokens = path.split(PATH_SEPARATOR);
-        
-        for (int i = 0; i < tokens.length; i++) {
-            String token = tokens[i];
-            if (!(configValue instanceof Map)) {
-                throw new ConfigurationKeyNotFoundException("Configuration key not found: " + path);
-            }
+        Object configValue = null;
+        lock.readLock().lock();
+        try {
+            configValue = keys;
+            String[] tokens = path.split(PATH_SEPARATOR);
             
-            configValue = ((Map<String, Object>)configValue).get(token);
+            for (int i = 0; i < tokens.length; i++) {
+                String token = tokens[i];
+                if (!(configValue instanceof Map)) {
+                    throw new ConfigurationKeyNotFoundException("Configuration key not found: " + path);
+                }
+                
+                configValue = ((Map<String, Object>)configValue).get(token);
+        }
+        } finally {
+            lock.readLock().unlock();
         }
         
         try {
@@ -78,12 +73,10 @@ public class YamlConfigImpl implements YamlConfig {
     public void refresh() throws IOException {
         LOG.info("Beginning configuration refresh.");
         
-        // Read all configuration files from the config root.
-        Map<ConfigurationScope, List<ConfigurationInstance>> allConfiguration = loadConfiguration();
+        // Flatten configuration.
+        Map<String, Object> configuration = configurationCompactor.compact(configurationInstanceProvider);
         
-        // Flatten configuration according to scope: global -> group -> application -> machine
-        Map<String, Object> configuration = flattenConfiguration(allConfiguration);
-        
+        // Replace configuration.
         lock.writeLock().lock();
         try {
             keys = configuration;
@@ -91,56 +84,5 @@ public class YamlConfigImpl implements YamlConfig {
             lock.writeLock().unlock();
         }
         LOG.info("Configuration successfully refreshed.");
-    }
-    
-    private Map<ConfigurationScope, List<ConfigurationInstance>> loadConfiguration() throws IOException {
-        Map<ConfigurationScope, List<ConfigurationInstance>> configuration = new HashMap<ConfigurationScope, List<ConfigurationInstance>>();
-        for (ConfigurationScope scope : ConfigurationScope.values()) {
-            configuration.put(scope, new ArrayList<ConfigurationInstance>());
-        }
-        
-        for (ConfigurationInstance instance : configurationInstanceProvider.loadConfigurations()) {
-            ConfigurationSettings configurationSettings = instance.getConfigurationSettings();
-            if (configurationSettings == null) {
-                LOG.info("Skipping configuration.  ConfigurationSettings not specified.");
-                continue;
-            } else if (!environment.equals(configurationSettings.getEnvironment())) {
-                LOG.info("Skipping configuration.  Incorrect environment:  ConfigurationSettings->environment={}", configurationSettings.getEnvironment());
-                continue;
-            } else if (!region.equals(configurationSettings.getRegion())) {
-                LOG.info("Skipping configuration.  Incorrect region: ConfigurationSettings->region={}", configurationSettings.getRegion());
-                continue;
-            } else if (configurationSettings.getScope() == ConfigurationScope.GROUP &&
-                    !group.equals(configurationSettings.getNamespace())) {
-                LOG.info("Skipping configuration.  Incorrect group: ConfigurationSettings->group={}", configurationSettings.getNamespace());
-                continue;
-            } else if (configurationSettings.getScope() == ConfigurationScope.APPLICATION &&
-                    !application.equals(configurationSettings.getNamespace())) {
-                LOG.info("Skipping configuration.  Incorrect application: ConfigurationSettings->application={}", configurationSettings.getNamespace());
-                continue;
-            }
-            
-            configuration.get(instance.getConfigurationSettings().getScope()).add(instance);
-        }
-        
-        return configuration;
-    }
-    
-    private Map<String, Object> flattenConfiguration(Map<ConfigurationScope, List<ConfigurationInstance>> configuration) {
-        Map<String, Object> flattened = new HashMap<String, Object>();
-        for (ConfigurationInstance instance : configuration.get(ConfigurationScope.GLOBAL)) {
-            flattened.putAll(instance.getKeys());
-        }
-        for (ConfigurationInstance instance : configuration.get(ConfigurationScope.GROUP)) {
-            flattened.putAll(instance.getKeys());
-        }
-        for (ConfigurationInstance instance : configuration.get(ConfigurationScope.APPLICATION)) {
-            flattened.putAll(instance.getKeys());
-        }
-        for (ConfigurationInstance instance : configuration.get(ConfigurationScope.MACHINE)) {
-            flattened.putAll(instance.getKeys());
-        }
-        
-        return flattened;
     }
 }

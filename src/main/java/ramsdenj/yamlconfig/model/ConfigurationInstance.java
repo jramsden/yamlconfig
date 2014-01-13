@@ -4,21 +4,21 @@ import java.util.Map;
 
 public class ConfigurationInstance {
     
-    private ConfigurationSettings configurationSettings;
+    private String namespace;
     private Map<String, Object> keys;
     
     public ConfigurationInstance() { }
     
-    public ConfigurationSettings getConfigurationSettings() {
-        return configurationSettings;
+    public String getNamespace() {
+        return namespace;
     }
 
-    public void setConfigurationSettings(ConfigurationSettings configurationSettings) {
-        this.configurationSettings = configurationSettings;
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
     }
     
-    public ConfigurationInstance withConfigurationSettings(ConfigurationSettings configurationSettings) {
-        this.configurationSettings = configurationSettings;
+    public ConfigurationInstance withNamespace(String namespace) {
+        this.namespace = namespace;
         return this;
     }
     
@@ -31,17 +31,13 @@ public class ConfigurationInstance {
     }
     
     public ConfigurationInstance withKeys(Map<String, Object> keys) {
-        if (this.keys == null) {
-            this.keys = keys;
-        } else {
-            this.keys.putAll(keys);
-        }
+        this.keys = keys;
         return this;
     }
 
     @Override
     public String toString() {
-        return "ConfigurationInstance [configurationSettings=" + configurationSettings
+        return "ConfigurationInstance [namespace=" + namespace
                 + ", keys=" + keys + "]";
     }
 }

@@ -8,15 +8,10 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-import org.easymock.EasyMockSupport;
 import org.junit.Test;
 import ramsdenj.yamlconfig.model.ConfigurationInstance;
-import ramsdenj.yamlconfig.model.ConfigurationScope;
-import ramsdenj.yamlconfig.model.ConfigurationSettings;
 
-import static org.easymock.EasyMock.*;
-
-public class YamlConfigImplTest extends EasyMockSupport {
+public class YamlConfigImplTest {
     
     public static class TestPojo {
         private int property;
@@ -35,50 +30,16 @@ public class YamlConfigImplTest extends EasyMockSupport {
         }
     }
     
-    private static final String region = "us-east-1";
-    private static final String environment = "test";
-    private static final String group = "group";
-    private static final String application = "application";
-    
-    @Test
-    public void shouldLoadGlobalConfiguration() throws Exception {
-        
-        Map<String, Object> keys = new HashMap<String, Object>();
-        keys.put("k1", "v1");
-        
-        ConfigurationInstanceProvider provider = createMock(ConfigurationInstanceProvider.class);
-        ConfigurationInstance globalConfig = createMock(ConfigurationInstance.class);
-        ConfigurationSettings globalSettings = createMock(ConfigurationSettings.class);
-        
-        expect(provider.loadConfigurations()).andReturn(Arrays.asList(globalConfig));
-        expect(globalConfig.getConfigurationSettings()).andReturn(globalSettings);
-        expect(globalSettings.getEnvironment()).andReturn(environment);
-        expect(globalSettings.getRegion()).andReturn(region);
-        expect(globalSettings.getScope()).andReturn(ConfigurationScope.GLOBAL).times(2);
-        expect(globalConfig.getConfigurationSettings()).andReturn(globalSettings);
-        expect(globalSettings.getScope()).andReturn(ConfigurationScope.GLOBAL);
-        
-        expect(globalConfig.getKeys()).andReturn(keys);
-        
-        replayAll();
-        YamlConfig config = new YamlConfigImpl(region, environment, group, application, provider);
-        config.refresh();
-        verifyAll();
-        
-        assertEquals("v1", config.getSetting("k1"));
-    }
+    private static final String namespace = "mycompany.group.application.prod.us-east-1";
     
     @Test
     public void shouldReadStringSetting() throws Exception {
-        ConfigurationSettings configurationSettings = new ConfigurationSettings(ConfigurationScope.GLOBAL, null, environment, region);
         Map<String, Object> keys = new HashMap<String, Object>();
         keys.put("k1", "v1");
-        ConfigurationInstance instance = new ConfigurationInstance()
-            .withConfigurationSettings(configurationSettings)
-            .withKeys(keys);
+        ConfigurationInstance instance = new ConfigurationInstance().withNamespace(namespace).withKeys(keys);
         
         ConfigurationInstanceProvider provider = createLocalProvider(instance);
-        YamlConfig config = new YamlConfigImpl(region, environment, group, application, provider);
+        YamlConfig config = new YamlConfigImpl(namespace, provider);
         config.refresh();
         
         assertEquals("v1", config.getSetting("k1"));
@@ -87,15 +48,12 @@ public class YamlConfigImplTest extends EasyMockSupport {
     
     @Test
     public void shouldReadNonString() throws Exception {
-        ConfigurationSettings configurationSettings = new ConfigurationSettings(ConfigurationScope.GLOBAL, null, environment, region);
         Map<String, Object> keys = new HashMap<String, Object>();
         keys.put("k1", 1);
-        ConfigurationInstance instance = new ConfigurationInstance()
-            .withConfigurationSettings(configurationSettings)
-            .withKeys(keys);
+        ConfigurationInstance instance = new ConfigurationInstance().withNamespace(namespace).withKeys(keys);
         
         ConfigurationInstanceProvider provider = createLocalProvider(instance);
-        YamlConfig config = new YamlConfigImpl(region, environment, group, application, provider);
+        YamlConfig config = new YamlConfigImpl(namespace, provider);
         config.refresh();
         
         assertEquals(1, (int)config.getSetting("k1", Integer.class));
@@ -104,15 +62,14 @@ public class YamlConfigImplTest extends EasyMockSupport {
     @Test
     public void shouldReadPojoSetting() throws Exception {
         int pojoPropertyValue = 2;
-        ConfigurationSettings configurationSettings = new ConfigurationSettings(ConfigurationScope.GLOBAL, null, environment, region);
         Map<String, Object> keys = new HashMap<String, Object>();
         Map<String, Object> keysl2 = new HashMap<String, Object>();
         keys.put("k1", keysl2);
         keysl2.put("property", pojoPropertyValue);
         
-        ConfigurationInstance instance = new ConfigurationInstance().withConfigurationSettings(configurationSettings).withKeys(keys);
+        ConfigurationInstance instance = new ConfigurationInstance().withNamespace(namespace).withKeys(keys);
         ConfigurationInstanceProvider provider = createLocalProvider(instance);
-        YamlConfig config = new YamlConfigImpl(region, environment, group, application, provider);
+        YamlConfig config = new YamlConfigImpl(namespace, provider);
         config.refresh();
         
         TestPojo pojo = config.getSetting("k1", TestPojo.class);
@@ -122,15 +79,14 @@ public class YamlConfigImplTest extends EasyMockSupport {
     
     @Test
     public void shouldReadNestedSetting() throws Exception {
-        ConfigurationSettings configurationSettings = new ConfigurationSettings(ConfigurationScope.GLOBAL, null, environment, region);
         Map<String, Object> keys = new HashMap<String, Object>();
         Map<String, Object> keysl2 = new HashMap<String, Object>();
         keysl2.put("kl2", "value");
         keys.put("kl1", keysl2);
         
-        ConfigurationInstance instance = new ConfigurationInstance().withConfigurationSettings(configurationSettings).withKeys(keys);
+        ConfigurationInstance instance = new ConfigurationInstance().withNamespace(namespace).withKeys(keys);
         ConfigurationInstanceProvider provider = createLocalProvider(instance);
-        YamlConfig config = new YamlConfigImpl(region, environment, group, application, provider);
+        YamlConfig config = new YamlConfigImpl(namespace, provider);
         config.refresh();
         
         assertEquals("value", config.getSetting("kl1->kl2"));

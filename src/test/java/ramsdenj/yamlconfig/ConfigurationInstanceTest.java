@@ -2,8 +2,6 @@ package ramsdenj.yamlconfig;
 
 import org.junit.Test;
 import ramsdenj.yamlconfig.model.ConfigurationInstance;
-import ramsdenj.yamlconfig.model.ConfigurationScope;
-import ramsdenj.yamlconfig.model.ConfigurationSettings;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
@@ -11,7 +9,13 @@ import static org.junit.Assert.*;
 
 public class ConfigurationInstanceTest {
     
-    private static final String yamlConfig = "configurationSettings:\n  scope: APPLICATION\n  namespace: LocalTranscoderSample\n  environment: alpha\n  region: us-east-1\nkeys:\n  key1: val1";
+    private static final String NAMESPACE = "ramsdenj";
+    private static final String KEY = "key";
+    private static final String VALUE = "value";
+    
+    private static final String yamlConfig = "namespace: " + NAMESPACE + "\n" +
+                                             "keys:\n" +
+                                             "  " + KEY + ": " + VALUE + "\n";
     
     @Test
     public void shouldLoadConfigurationInstance() {
@@ -20,17 +24,11 @@ public class ConfigurationInstanceTest {
         
         // Basic structural validation.
         assertNotNull(instance);
-        assertNotNull(instance.getConfigurationSettings());
+        assertNotNull(instance.getNamespace());
         assertNotNull(instance.getKeys());
         
-        // Validate ConfigurationSettings.
-        ConfigurationSettings settings = instance.getConfigurationSettings();
-        assertEquals(ConfigurationScope.APPLICATION, settings.getScope());
-        assertEquals("LocalTranscoderSample", settings.getNamespace());
-        assertEquals("alpha", settings.getEnvironment());
-        assertEquals("us-east-1", settings.getRegion());
-        
-        // Validate keys.
-        assertEquals("val1", instance.getKeys().get("key1"));
+        // Validate configuration values.
+        assertEquals(NAMESPACE, instance.getNamespace());
+        assertEquals(VALUE, instance.getKeys().get(KEY));
     }
 }
