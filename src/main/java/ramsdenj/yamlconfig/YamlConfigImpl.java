@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import ramsdenj.yamlconfig.model.ConfigurationCompactor;
 import ramsdenj.yamlconfig.model.ConfigurationKeyNotFoundException;
 import ramsdenj.yamlconfig.model.ConfigurationValueConversionException;
 
@@ -25,10 +24,12 @@ public class YamlConfigImpl implements YamlConfig {
     private Map<String, Object> keys;
     private ReadWriteLock lock;
     
-    public YamlConfigImpl(String namespace, ConfigurationInstanceProvider configurationInstanceProvider) {
+    public YamlConfigImpl(String namespace, ConfigurationInstanceProvider configurationInstanceProvider) throws IOException {
         this.configurationInstanceProvider = configurationInstanceProvider;
         this.configurationCompactor = new ConfigurationCompactor(namespace);
         this.lock = new ReentrantReadWriteLock();
+        
+        refresh();
     }
 
     public String getSetting(String path) throws ConfigurationKeyNotFoundException, ConfigurationValueConversionException {
@@ -50,7 +51,11 @@ public class YamlConfigImpl implements YamlConfig {
                     throw new ConfigurationKeyNotFoundException("Configuration key not found: " + path);
                 }
                 
-                configValue = ((Map<String, Object>)configValue).get(token);
+                Map<String, Object> configMapping = (Map<String, Object>)configValue;
+                if (!configMapping.containsKey(token)) {
+                    throw new ConfigurationKeyNotFoundException("Configuration key not found: " + path);
+                }
+                configValue = configMapping.get(token);
         }
         } finally {
             lock.readLock().unlock();
@@ -58,10 +63,8 @@ public class YamlConfigImpl implements YamlConfig {
         
         try {
             if (clazz.isInstance(configValue)) {
-                LOG.info("Setting found is correct class");
                 return clazz.cast(configValue);
             } else {
-                LOG.info("Setting found is incorrect class.  Attempting to deserialize into correct class.");
                 Yaml yaml = new Yaml(new Constructor(clazz));
                 return clazz.cast(yaml.load(yaml.dump(configValue)));
             }

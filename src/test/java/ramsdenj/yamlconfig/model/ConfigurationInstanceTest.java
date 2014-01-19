@@ -1,4 +1,4 @@
-package ramsdenj.yamlconfig;
+package ramsdenj.yamlconfig.model;
 
 import org.junit.Test;
 import ramsdenj.yamlconfig.model.ConfigurationInstance;

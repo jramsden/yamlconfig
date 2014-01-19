@@ -1,4 +1,4 @@
-package ramsdenj.yamlconfig.model;
+package ramsdenj.yamlconfig;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import ramsdenj.yamlconfig.ConfigurationInstanceProvider;
+import ramsdenj.yamlconfig.model.ConfigurationInstance;
 
 public class ConfigurationCompactor {
     

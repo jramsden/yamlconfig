@@ -8,23 +8,20 @@ Retrieving settings from configuration:
 ```yaml
 configurations:
   -
-    configuration:
-      namespace: ramsdenj
-      keys:
-        sampleKey: sampleValue
-        sampleKeyMap:
-          nestedKeyOne: nestedValueOne
-          nestedKeyTwo: nestedValueTwo
+    namespace: ramsdenj
+    keys:
+      sampleKey: sampleValue
+      sampleKeyMap:
+        nestedKeyOne: nestedValueOne
+        nestedKeyTwo: nestedValueTwo
   -
-    configuration:
-      namespace: ramsdenj.myappgroup.myapp
-      keys:
-        sampleKey: sampleValueOverride
+    namespace: ramsdenj.myappgroup.myapp
+    keys:
+      sampleKey: sampleValueOverride
   -
-    configuration:
-      namespace: ramsdenj.myappgroup.myapp.dev.us-east-1
-      keys:
-        sampleKeyTwo: sampleValueTwo
+    namespace: ramsdenj.myappgroup.myapp.dev.us-east-1
+    keys:
+      sampleKeyTwo: sampleValueTwo
 ```
 
 ```java
@@ -43,8 +40,7 @@ You can also retrieve POJOs:
 ```
 configurations:
   -
-  configuration:
-    namespace: ramsden.myapp
+    namespace: ramsdenj
     keys:
       point:
         x: 1.0
@@ -52,7 +48,7 @@ configurations:
 ```
 
 ```java
-YamlConfig yamlConfig = new YamlConfigImpl("ramsdenj.myapp.dev");
+YamlConfig yamlConfig = new YamlConfigImpl("ramsdenj.myappgroup.myapp.dev", configurationInstanceProvider);
 yamlConfig.getSetting("point", Point.class);            // returns an instance of Point.
 ```
 
